@@ -1,5 +1,5 @@
 package com.anax.graphtool
-package Graph
+package graph
 
 import scala.collection.mutable
 
