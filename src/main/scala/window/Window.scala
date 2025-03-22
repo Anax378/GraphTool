@@ -16,6 +16,10 @@ class Window(val width: Int,val height: Int) {
 	@volatile var isMouseLeftDown = false
 	@volatile var isUnprocessedMouseRightPress = false
 	@volatile var isUnprocessedMouseLeftPress = false
+	
+	@volatile var isMouseMiddleDown = false
+	@volatile var isUnprocessedMouseMiddlePress = false
+	
 	@volatile var unprocessedDragDX = 0
 	@volatile var unprocessedDragDY = 0
 	@volatile var unprocessedWheelScroll = 0
@@ -55,6 +59,10 @@ class Window(val width: Int,val height: Int) {
 				isMouseLeftDown = true
 				isUnprocessedMouseLeftPress = true
 			}
+			if(e.getButton == MouseEvent.BUTTON2){
+				isMouseMiddleDown = true
+				isUnprocessedMouseMiddlePress = true
+			}
 			if (e.getButton == MouseEvent.BUTTON3){
 				isMouseRightDown = true
 				isUnprocessedMouseRightPress = true
@@ -67,7 +75,10 @@ class Window(val width: Int,val height: Int) {
 			if (e.getButton == MouseEvent.BUTTON1){
 				isMouseLeftDown = false
 			}
-			if (e.getButton == MouseEvent.BUTTON2){
+			if(e.getButton == MouseEvent.BUTTON2){
+				isMouseMiddleDown = false
+			}
+			if (e.getButton == MouseEvent.BUTTON3){
 				isMouseRightDown = false
 			}
 			mouseReleasedListener()

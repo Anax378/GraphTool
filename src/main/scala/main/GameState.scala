@@ -2,6 +2,8 @@ package com.anax.graphtool
 package main
 import math.Vector
 
+import com.anax.graphtool.game.GameCursor
+
 class GameState {
 	var offset: Vector = new Vector(0, 0)
 	@volatile var scale: Double = 1.0

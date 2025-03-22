@@ -3,19 +3,29 @@ package graph
 
 import math.{Coord, Vector}
 
+import com.anax.graphtool.graph.minesweeper.MinesweeperCell
 import com.anax.graphtool.render.Renderable
 
-import java.awt.Color
+import java.awt.{Color, Font, Graphics2D}
 import java.awt.image.BufferedImage
 import scala.collection.mutable
 import scala.util.Random
 
-class GraphCell(var position: Coord) extends PhysicalGraphNode{
+class GraphCell(var position: Coord) extends PhysicalGraphNode with Renderable {
 	
 	val adjacent: mutable.HashSet[GraphNode] = new mutable.HashSet[GraphNode]()
-	val connectionAttractionConstant = 0.45
+	val connectionAttractionConstant = 1
 	val random: Random = new Random()
 	val repulsionConstant = 3000 // + random.nextInt(10000)
+	val repulsionBreadthConstant = 10
+	val repulsionMagnitudeConstant = 80
+	
+	var name: String = ""
+	var backgroundColor: () => Color = () => Color.BLACK
+	var numberColor: () => Color = () => Color.WHITE
+	var highlightColor: () => Color = () => Color.CYAN
+	var linkColor: (PhysicalGraphNode) => Color = (_) => Color.DARK_GRAY
+	var outlineColor: () => Color = () => Color.WHITE
 	
 	var velocity: Vector = new Vector(0, 0);
 	var radius: Double = 10
@@ -27,37 +37,47 @@ class GraphCell(var position: Coord) extends PhysicalGraphNode{
 	override def setVelocity(velocity: Vector): Unit = {this.velocity = velocity}
 	override def getAdjacent(): mutable.Set[GraphNode] = adjacent;
 	
+	def getRepulsionStrength(distance: Double): Double = {
+		repulsionMagnitudeConstant * Math.pow(2, -Math.pow(distance/repulsionBreadthConstant, 2))
+	}
+	
 	override def updateVelocity(nodes: Iterable[GraphNode], deltaTime: Double): Unit = {
-		velocity = new Vector(0, 0)
-		for(node: GraphNode <- adjacent){
-			node match {
-				case cell: PhysicalGraphNode => {
-					if (node != this){
-						velocity = velocity.add(position.vectorTo(cell.getPosition()).scale(connectionAttractionConstant))
-					}
-				}
-			}
-		}
-		
-		
+		var acceleration = new Vector(0, 0)
 		for(node: GraphNode <- nodes){
 			var constant: Double = repulsionConstant
 			node match {
 				case cell: PhysicalGraphNode => {
-					cell match {case minesweeperCell: MinesweeperCell => {constant = minesweeperCell.repulsionConstant}}
+					cell match {case minesweeperCell: MinesweeperCell => {constant = minesweeperCell.repulsionConstant} case _=>{}}
 					if(node != this){
 						val direction: Vector = cell.getPosition().vectorTo(position)
 						val distance: Double = direction.magnitude()
-						velocity = velocity.add(direction.scaleTo((1.0 / (distance * distance)) * repulsionConstant))
+						acceleration = acceleration.add(direction.scaleTo(1.0 / (distance * distance)*repulsionConstant))
 					}
 				}
+				case _=>{}
 			}
 		}
-		velocity = velocity.scale(deltaTime)
-		velocity = velocity.cap(deltaTime*100)
+		for (node: GraphNode <- adjacent) {
+			node match {
+				case cell: PhysicalGraphNode => {
+					if (node != this) {
+						val vec = position.vectorTo(cell.getPosition())
+						acceleration = acceleration.add(vec.scale(connectionAttractionConstant))
+					}
+				}
+				case _=>{}
+			}
+		}
+		
+		acceleration = acceleration.scale(deltaTime)
+		//this.velocity = this.velocity.scale(0.5).add(acceleration)
+		this.velocity = acceleration
+		this.velocity = this.velocity.cap(deltaTime*1000)
+		this.velocity = this.velocity.restore()
 	}
-	
+
 	override def link(other: GraphNode): Unit = {
+		if(other == this){return}
 		adjacent.add(other)
 		if (!other.getAdjacent().contains(this)){
 			other.link(this);
@@ -71,5 +91,73 @@ class GraphCell(var position: Coord) extends PhysicalGraphNode{
 		}
 	}
 	
-}
+	override def renderOnImage(image: BufferedImage, scale: Double, offset: math.Vector, layer: Int, graphics: Graphics2D = null): BufferedImage = {
+		val g2d: Graphics2D = if (graphics != null) graphics else image.createGraphics()
+		if (layer == 0) {
+			return renderConnectionsOnImage(image, scale, offset, g2d)
+		}
+		if (layer == 1) {
+			return renderBodyOnImage(image, scale, offset, g2d);
+		}
+		
+		image
+	}
+	
+	def renderBodyOnImage(image: BufferedImage, scale: Double, offset: math.Vector, graphics: Graphics2D): BufferedImage = {
+		val g2d: Graphics2D = if (graphics != null) graphics else image.createGraphics()
+		val renderPosition: Coord = Renderable.toScreenPosition(getPosition(), scale, offset)
+		val renderX: Int = renderPosition.roundX()
+		val renderY: Int = renderPosition.roundY()
+		val renderRadius: Int = Math.round((radius * scale).toFloat)
+		
+		g2d.setPaint(backgroundColor())
+		g2d.fillOval(renderX - renderRadius, renderY - renderRadius, renderRadius * 2, renderRadius * 2)
+		
+		
+		val source = getSource()
+		
+		if (source == this || (source != null && source.getAdjacent().contains(this))) {
+			g2d.setPaint(highlightColor())
+		} else {
+			g2d.setPaint(outlineColor())
+		}
+		
+		g2d.drawOval(renderX - renderRadius, renderY - renderRadius, renderRadius * 2, renderRadius * 2)
+		
+		val halfRadius: Int = renderRadius / 2
 
+		val font: Font = new Font("Arial", Font.PLAIN, Math.max((renderRadius * 2), 0))
+		g2d.setFont(font)
+		g2d.setPaint(Color.WHITE)
+		val width: Int = g2d.getFontMetrics().getMaxAdvance
+		val textCoord: Coord = renderPosition.add(new math.Vector(-renderRadius / 2, font.getSize / 2))
+		g2d.drawString(name, textCoord.roundX(), textCoord.roundY())
+		
+		image
+	}
+	
+	def renderConnectionsOnImage(image: BufferedImage, scale: Double, offset: math.Vector, graphics: Graphics2D): BufferedImage = {
+		val g2d: Graphics2D = if (graphics != null) graphics else image.createGraphics()
+		val renderPosition: Coord = Renderable.toScreenPosition(getPosition(), scale, offset)
+		for (node: GraphNode <- adjacent) {
+			node match {
+				case physicalNode: PhysicalGraphNode => {
+					if (physicalNode.hashCode() < this.hashCode()) {
+						
+						if (getSource() == this || getSource() == physicalNode) {
+							g2d.setPaint(highlightColor())
+						} else {
+							g2d.setPaint(linkColor(physicalNode))
+						}
+						
+						val nodeRenderPosition: Coord = Renderable.toScreenPosition(physicalNode.getPosition(), scale, offset)
+						g2d.drawLine(renderPosition.roundX(), renderPosition.roundY(), nodeRenderPosition.roundX(), nodeRenderPosition.roundY())
+					}
+				}
+				case _=>{}
+			}
+		}
+		image
+	}
+	
+}

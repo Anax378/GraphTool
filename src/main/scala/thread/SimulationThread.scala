@@ -3,9 +3,10 @@ package thread
 
 import main.GameState
 
-import com.anax.graphtool.graph.MinesweeperGameGraph
+import com.anax.graphtool.graph.Graph
+import com.anax.graphtool.graph.minesweeper.MinesweeperGameGraph
 
-class SimulationThread(val state: GameState, val graph: MinesweeperGameGraph) extends Thread{
+class SimulationThread(val state: GameState, val graph: Graph) extends Thread{
 	
 	override def run(): Unit = {
 		var start = System.currentTimeMillis()
