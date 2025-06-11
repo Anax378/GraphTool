@@ -151,7 +151,7 @@ class MinesweeperGameGraph extends Graph with Renderable {
 		addAll(nodes.values)
 	}
 	
-	def addRandomGraph(cellCount: Int, connectionMultiplier: Double, spacing: Int, mineDensity: Double): Unit = {
+	def addRandomGraph(cellCount: Int, connectionMultiplier: Double, spacing: Double, mineDensity: Double): Unit = {
 		val graphNodes = getRandomTree(cellCount, spacing, mineDensity)
 		
 		for(i <- 0 until Math.round(connectionMultiplier * cellCount - cellCount).toInt){
@@ -165,11 +165,11 @@ class MinesweeperGameGraph extends Graph with Renderable {
 		addAll(getRandomTree(cellCount, spacing, mineDensity))
 	}
 	
-	private def getRandomTree(cellCount: Int, spacing: Int, mineDensity: Double): ArrayBuffer[GraphNode] = {
+	private def getRandomTree(cellCount: Int, spacing: Double, mineDensity: Double): ArrayBuffer[GraphNode] = {
 		val treeNodes: ArrayBuffer[GraphNode] = new ArrayBuffer[GraphNode]()
 		val random: Random = new Random()
 		for (i: Int <- 0 until cellCount){
-			val cell: MinesweeperCell = new MinesweeperCell(new Coord(random.nextInt(cellCount*spacing), random.nextInt(cellCount*spacing)))
+			val cell: MinesweeperCell = new MinesweeperCell(new Coord(random.nextInt(cellCount*spacing.toInt), random.nextInt(cellCount*spacing.toInt)))
 			cell.isMine = random.nextDouble() <= mineDensity
 			if(i > 0){
 				cell.link(treeNodes(random.nextInt(treeNodes.length)))

@@ -14,10 +14,9 @@ import scala.util.Random
 
 
 object GraphCell {
-	val DEFAULT_RADIUS: Double = 10
-	val DEFAULT_REPULSION_CONSTANT = 3000
-	val DEFAULT_CONNECTION_ATTRACTION_CONSTANT = 0.001 //+ 0.44
-	
+	var DEFAULT_RADIUS: Double = 10
+	var DEFAULT_REPULSION_CONSTANT = 3000
+	var DEFAULT_CONNECTION_ATTRACTION_CONSTANT = 0.001 //+ 0.44
 }
 
 class GraphCell(var position: Coord) extends PhysicalGraphNode with Renderable {

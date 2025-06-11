@@ -119,9 +119,6 @@ class InputProcessorThread(val state: GameState, val window: Window, val graph: 
 			}
 		}
 		
-		if (window.unprocessedKeyPresses.getOrDefault(KeyEvent.VK_F, false)){
-		}
-		window.unprocessedKeyPresses.put(KeyEvent.VK_F, false)
 		if(window.unprocessedKeyPresses.getOrDefault(KeyEvent.VK_G, false)){
 			window.unprocessedKeyPresses.put(KeyEvent.VK_G, false)
 			if(graph.highlightSource != null){
