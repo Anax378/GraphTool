@@ -3,7 +3,11 @@ package graph.logic
 
 import graph.{Graph, GraphNode}
 
+import com.anax.graphtool.graph.minesweeper.MinesweeperCell
+import com.anax.graphtool.math.Coord
+
 import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 
 class LogicCircuitGraph extends Graph {
 	var toUpdate: mutable.HashSet[LogicalCell] = new mutable.HashSet[LogicalCell]()

@@ -1,6 +1,8 @@
 package com.anax.graphtool
 package math
 
+import java.util.Objects
+
 class Coord (val x: Double, val y: Double) {
   
 	def add(vec: Vector): Coord = new Coord(x + vec.x, y + vec.y)
@@ -16,6 +18,10 @@ class Coord (val x: Double, val y: Double) {
 	def roundX(): Int = Math.round(x.toFloat)
 	def roundY(): Int = Math.round(y.toFloat)
 	def restore(): Coord = new Coord(if x.isNaN then 0 else x, if y.isNaN then 0 else y)
+	
+	override def hashCode(): Int = {
+		Objects.hash(x, y)
+	}
 	
  
 }

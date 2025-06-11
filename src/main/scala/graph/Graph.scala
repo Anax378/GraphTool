@@ -129,6 +129,12 @@ class Graph extends Renderable{
 		}
 	}
 	
+	def spread(factor: Double): Unit = {
+		for(node <- nodes.collect({case c: PhysicalGraphNode => c})){
+			node.setPosition(node.getPosition().scale(factor))
+		}
+	}
+	
 	override def renderOnImage(image: BufferedImage, scale: Double, offset: math.Vector, layer: Int, g2d: Graphics2D): BufferedImage = {
 		for (node <- nodes) {
 			node match {

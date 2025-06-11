@@ -3,6 +3,7 @@ package graph
 
 import math.{Coord, Vector}
 
+import com.anax.graphtool.graph.GraphCell.{DEFAULT_CONNECTION_ATTRACTION_CONSTANT, DEFAULT_RADIUS, DEFAULT_REPULSION_CONSTANT}
 import com.anax.graphtool.graph.minesweeper.MinesweeperCell
 import com.anax.graphtool.render.Renderable
 
@@ -11,14 +12,20 @@ import java.awt.image.BufferedImage
 import scala.collection.mutable
 import scala.util.Random
 
+
+object GraphCell {
+	val DEFAULT_RADIUS: Double = 10
+	val DEFAULT_REPULSION_CONSTANT = 3000
+	val DEFAULT_CONNECTION_ATTRACTION_CONSTANT = 0.001 //+ 0.44
+	
+}
+
 class GraphCell(var position: Coord) extends PhysicalGraphNode with Renderable {
 	
 	val adjacent: mutable.HashSet[GraphNode] = new mutable.HashSet[GraphNode]()
-	val connectionAttractionConstant = 1
+	val connectionAttractionConstant = DEFAULT_CONNECTION_ATTRACTION_CONSTANT
 	val random: Random = new Random()
-	val repulsionConstant = 3000 // + random.nextInt(10000)
-	val repulsionBreadthConstant = 10
-	val repulsionMagnitudeConstant = 80
+	val repulsionConstant = DEFAULT_REPULSION_CONSTANT
 	
 	var name: String = ""
 	var backgroundColor: () => Color = () => Color.BLACK
@@ -28,7 +35,7 @@ class GraphCell(var position: Coord) extends PhysicalGraphNode with Renderable {
 	var outlineColor: () => Color = () => Color.WHITE
 	
 	var velocity: Vector = new Vector(0, 0);
-	var radius: Double = 10
+	var radius: Double = DEFAULT_RADIUS
 	
 	override def getPosition(): Coord = position
 	override def getVelocity(): Vector = velocity
@@ -36,10 +43,6 @@ class GraphCell(var position: Coord) extends PhysicalGraphNode with Renderable {
 	override def setPosition(position: Coord): Unit = {this.position = position}
 	override def setVelocity(velocity: Vector): Unit = {this.velocity = velocity}
 	override def getAdjacent(): mutable.Set[GraphNode] = adjacent;
-	
-	def getRepulsionStrength(distance: Double): Double = {
-		repulsionMagnitudeConstant * Math.pow(2, -Math.pow(distance/repulsionBreadthConstant, 2))
-	}
 	
 	override def updateVelocity(nodes: Iterable[GraphNode], deltaTime: Double): Unit = {
 		var acceleration = new Vector(0, 0)
@@ -86,7 +89,7 @@ class GraphCell(var position: Coord) extends PhysicalGraphNode with Renderable {
 	
 	override def unlink(other: GraphNode): Unit = {
 		adjacent.remove(other)
-		if (other.getAdjacent().contains(this)){
+		if (other != null && other.getAdjacent().contains(this)){
 			other.unlink(this)
 		}
 	}

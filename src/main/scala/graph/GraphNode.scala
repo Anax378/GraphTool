@@ -7,6 +7,9 @@ trait GraphNode {
 	def getAdjacent(): mutable.Set[GraphNode]
 	def link(other: GraphNode): Unit
 	def unlink(other: GraphNode): Unit
+	def unlinkAll(): Unit = {
+		getAdjacent().foreach(a => unlink(a))
+	}
 	
 	def getDFSSubTree(visited: mutable.Set[GraphNode] = new mutable.HashSet[GraphNode]()): ContainerGraphNode = {
 		val root: ContainerGraphNode = new ContainerGraphNode(this);

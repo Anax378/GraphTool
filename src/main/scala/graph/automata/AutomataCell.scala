@@ -27,6 +27,11 @@ class AutomataCell(position: Coord, var state: Int) extends GraphCell(position) 
 		case _ => Color.DARK_GRAY
 	}
 	
+	def withName(name: String): AutomataCell = {
+		this.name = name
+		this
+	}
+	
 	def prepareNextState(): Unit = {
 		val cells = getAdjacent().collect({case a: AutomataCell => a})
 		state match {
@@ -94,16 +99,16 @@ class AutomataCell(position: Coord, var state: Int) extends GraphCell(position) 
 			case AutomataCell.lz => {
 				new Color(30, 30, 30)
 			}
-			case AutomataCell.c => {
+			case AutomataCell.d => {
 				new Color(0, 0, 55)
 			}
-			case AutomataCell.cp => {
+			case AutomataCell.dp => {
 				new Color(0, 0, 255)
 			}
-			case AutomataCell.d => {
+			case AutomataCell.c => {
 				new Color(0, 55, 55)
 			}
-			case AutomataCell.dp => {
+			case AutomataCell.cp => {
 				new Color(0, 255, 255)
 			}
 			case AutomataCell.g => {
@@ -143,4 +148,7 @@ object AutomataCell {
 	val x: Int = 9
 	val xp: Int = 10
 	val excited: Set[Int] = Set(lp, dp, gp, xp)
+	
+	def all(): Array[Int] = Array(l, lp, lz, c, cp, d, dp, g, gp, x, xp)
+	
 }
